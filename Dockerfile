@@ -78,4 +78,4 @@ USER 1000
 EXPOSE 31337
 
 ENTRYPOINT flight_sql
-CMD [ --backend=duckdb --database-filename=/data/duck.db --print-queries ]
+CMD [ --backend=duckdb, --database-filename=/data/duck.db, --print-queries ]
