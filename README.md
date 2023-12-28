@@ -13,5 +13,95 @@ Overall the target environment is a Kubernetes cluster with Grafana [FlightSQL c
 ## Example
 
 ```yaml
-TBD
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: flight
+
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: flight
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+      ports:
+        - protocol: TCP
+          port: 31337
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: flight
+
+spec:
+  selector:
+    app.kubernetes.io/name: flight
+  ports:
+    - name: sql
+      port: 31337
+
+--- 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight
+
+spec:
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flight
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flight
+    spec:
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: flight-init
+          image: gitea.example.home.arpa/infrastructure/code:v1
+          command: [ /bin/bash, -c ]
+          args:
+            - duckdb --init sql/schema.sql /data/duck.db "SHOW TABLES;";
+            - chmod 0666 /data/duck.db
+          envFrom:
+            - secretRef:
+                name: argo-env-creds
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: flight
+          image: gitea.example.home.arpa/infrastructure/flightsql:v1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          ports:
+            - name: sql
+              containerPort: 31337
+          envFrom:
+            - secretRef:
+                name: argo-env-creds
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
 ```
