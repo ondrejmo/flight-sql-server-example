@@ -19,22 +19,10 @@ git clone --depth 1 https://github.com/duckdb/duckdb.git --branch ${DUCKDB_VERSI
 
 pushd duckdb
 
-# Do some Mac stuff if needed...
-OS=$(uname)
-if [ "${OS}" == "Darwin" ]; then
-  echo "Running Mac-specific setup steps..."
-  export MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion)
-fi
-
 if [ ! -d "build/release" ]; then
     echo "Building DuckDB"
     GEN=ninja make
 fi
-popd
-
-# Build the python library from source
-pushd duckdb/tools/pythonpkg
-python setup.py install
 popd
 
 # Copy DuckDB executable and shared libraries/headers to /usr/local

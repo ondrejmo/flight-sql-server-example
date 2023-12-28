@@ -39,17 +39,20 @@ RUN apt update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
- # Install DuckDB
+# Install DuckDB
 ARG DUCKDB_VERSION="v0.9.2"
-RUN wget "https://github.com/duckdb/duckdb/releases/download/${DUCKDB_VERSION}/libduckdb-linux-`dpkg --print-architecture`.zip" -O /tmp/duckdb.zip && \
-    cd /tmp && \
-    unzip -j /tmp/duckdb.zip && \
-    cp libduckdb* /usr/local/lib/ && \
-    cp duckdb.h /usr/local/include/ && \
-    cp duckdb.hpp /usr/local/include/ && \
-    git clone --branch $DUCKDB_VERSION --single-branch --depth 1 https://github.com/duckdb/duckdb.git && \
-    cp -R duckdb/src/include/duckdb /usr/local/include/ && \
-    rm /tmp/duckdb.zip
+# RUN wget "https://github.com/duckdb/duckdb/releases/download/${DUCKDB_VERSION}/libduckdb-linux-`dpkg --print-architecture`.zip" -O /tmp/duckdb.zip && \
+#     cd /tmp && \
+#     unzip -j /tmp/duckdb.zip && \
+#     cp libduckdb* /usr/local/lib/ && \
+#     cp duckdb.h /usr/local/include/ && \
+#     cp duckdb.hpp /usr/local/include/ && \
+#     git clone --branch $DUCKDB_VERSION --single-branch --depth 1 https://github.com/duckdb/duckdb.git && \
+#     cp -R duckdb/src/include/duckdb /usr/local/include/ && \
+#     rm /tmp/duckdb.zip
+
+COPY --chown=1000:1000 ./scripts ./scripts
+RUN scripts/build_duckdb.sh ${DUCKDB_VERSION} "Y"
 
 ARG APP_DIR=/opt/flight_sql
 
