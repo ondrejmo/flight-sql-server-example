@@ -29,9 +29,7 @@ set(ARROW_FLIGHT_SQL_DUCKDB_SQLITE_SERVER_SRCS
     src/duckdb/duckdb_statement.cpp
     src/duckdb/duckdb_statement_batch_reader.cpp
     src/duckdb/duckdb_server.cpp
-        src/FlightAuthHandler.h src/duckdb/duckdb_tables_schema_batch_reader.cpp)
-
-add_subdirectory(jwt-cpp)
+    src/duckdb/duckdb_tables_schema_batch_reader.cpp)
 
 add_executable(flight_sql
     src/flight_sql.cpp
@@ -41,7 +39,6 @@ add_executable(flight_sql
 
 target_include_directories(flight_sql PRIVATE src/sqlite src/duckdb /usr/local/include)
 target_link_libraries(flight_sql PRIVATE
-		      jwt-cpp
 		      arrow_shared
 		      arrow_flight_shared
 		      arrow_flight_sql_shared
