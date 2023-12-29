@@ -74,20 +74,24 @@ spec:
         fsGroup: 1000
       initContainers:
         - name: flight-init
-          image: gitea.example.home.arpa/infrastructure/code:v1
+          image: gitea.example.home.arpa/org/code:v1
           command: [ /bin/bash, -c ]
           args:
-            - duckdb --init sql/schema.sql /data/duck.db "SHOW TABLES;";
-            - chmod 0666 /data/duck.db
+            - cp /app/sql/schema.sql /data/schema.sql;
           envFrom:
             - secretRef:
-                name: argo-env-creds
+                name: env-creds
           volumeMounts:
             - name: data
               mountPath: /data
       containers:
         - name: flight
-          image: gitea.example.home.arpa/infrastructure/flightsql:v1
+          image: gitea.example.home.arpa/org/flight:v1
+          command: [ /bin/bash, -c ]
+          args:
+            - |
+              export INIT_SQL_COMMANDS=`cat /data/schema.sql`;
+              flight_sql --backend=duckdb --database-filename=/home/flight/duck.db --print-queries;
           resources:
             requests:
               cpu: 50m
@@ -97,7 +101,7 @@ spec:
               containerPort: 31337
           envFrom:
             - secretRef:
-                name: argo-env-creds
+                name: env-creds
           volumeMounts:
             - name: data
               mountPath: /data
